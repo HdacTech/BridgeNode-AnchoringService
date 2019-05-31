@@ -49,14 +49,7 @@
 			#{change_size}
 		)
 	</insert>
-	
-	<delete id="deleteAnchorInfo">
-		DELETE 
-		FROM
-		anchor_history
-		WHERE address_index = #{address_index}
-	</delete>
-	
+		
 	<select id="getSeed" parameterType="map" resultType="string">
 		SELECT
 			word
@@ -137,5 +130,12 @@
 			tokenSwapRatio 
 		FROM
 			token_info
+	</select>
+	
+	<select id="getAnchorConfig" resultType="map">
+		SELECT
+			*
+		FROM
+			anchor_config
 	</select>
 </mapper>

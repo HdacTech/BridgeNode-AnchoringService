@@ -44,17 +44,7 @@ public class MariaDao {
 		int result = mapper.insertAnchorInfo(paramMap);		
 		return result;
 	}
-	
-	/**
-	 * Delete specific anchoring history from DB
-	 * @param paramMap address_index field
-	 * @throws Exception
-	 */
-	public void deleteAnchorInfo(Map<String, Object> paramMap) throws Exception{
-		MariaMapper mapper = sqlSessionTemplate.getMapper(MariaMapper.class);
-		mapper.deleteAnchorInfo(paramMap);
-	}
-	
+		
 	/**
 	 * Get seed words from DB
 	 * @param paramMap empty map
@@ -138,6 +128,16 @@ public class MariaDao {
 	public List<Map<String, Object>> getTokenName(){
 		MariaMapper mapper = sqlSessionTemplate.getMapper(MariaMapper.class);
 		List<Map<String, Object>> result = mapper.getTokenName();
+		return result;
+	}
+	
+	/**
+	 * Get anchor config
+	 * @return anchor config
+	 */
+	public Map<String, Object> getAnchorConfig(){
+		MariaMapper mapper = sqlSessionTemplate.getMapper(MariaMapper.class);
+		Map<String, Object> result = mapper.getAnchorConfig();
 		return result;
 	}
 }

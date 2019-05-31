@@ -9,11 +9,11 @@ package com.hdac.util;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -22,15 +22,14 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.ibatis.io.Resources;
 import org.bitcoinj.core.ECKey;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.hdac.util.HTransaction;
 import com.hdac.util.JsonUtil;
 import com.hdacSdk.hdacWallet.HdacCoreAddrParams;
+import com.hdacSdk.hdacWallet.HdacTransaction;
 import com.hdacSdk.hdacWallet.HdacWallet;
 import com.hdacSdk.hdacWallet.HdacWalletManager;
 import com.hdacSdk.hdacWallet.HdacWalletUtils;
@@ -49,65 +48,6 @@ import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
  */
 public class HdacUtil
 {
-	public static ServerConfig _PUBLIC_;
-	public static ServerConfig _PRIVATE_;
-	
-	static
-	{
-		_PUBLIC_ = new ServerConfig();
-		_PRIVATE_ = new ServerConfig();
-
-		try
-		{
-			setServerConfig(_PUBLIC_, "config/hdac-hdac.properties");
-			setServerConfig(_PRIVATE_, "config/hdac-side.properties");
-		}
-		catch (Exception e)
-		{
-		}
-	}
-
-	/**
-	 * Function to set configuration of server
-	 * @param config ServerConfig object
-	 * @param resource path of properties
-	 */
-	private static void setServerConfig(ServerConfig config, String resource)
-	{
-		Properties properties = new Properties();
-
-		try
-		{
-			Reader reader = Resources.getResourceAsReader(resource);
-			properties.load(reader);
-
-			config.setRpcIp(properties.getProperty("rpcIp"));
-			config.setRpcPort(properties.getProperty("rpcPort"));
-			config.setRpcUser(properties.getProperty("rpcUser"));
-			config.setRpcPassword(properties.getProperty("rpcPassword"));
-			config.setChainName(properties.getProperty("chainName"));
-
-			reader.close();
-		}
-		catch (Exception e)
-		{
-			System.out.println("hdac rpc error : " + e);
-		}
-	}
-
-	/**
-	 * Get server configuration according to path
-	 * @param path server type
-	 * @return server configuration
-	 */
-	public static ServerConfig getServerType(String path)
-	{
-		if ("public".equals(path))
-			return HdacUtil._PUBLIC_;
-
-		return HdacUtil._PRIVATE_;
-	}
-
 	/**
 	 * Function to get data through RPC command
 	 * @param method RPC method name
@@ -115,23 +55,27 @@ public class HdacUtil
 	 * @param config server configuration
 	 * @return result string of RPC 
 	 */
-	public static String getDataFromRPC(String method, Object[] params, ServerConfig config)
+	public static String getDataFromRPC(String method, Object[] params, Map<String, Object> config)
 	{
 		StringBuilder result = new StringBuilder();
 		CloseableHttpResponse response1 = null;
 
-		//System.out.println("RPC CONFIG = " + config.getRpcIp() + " : " + config.getRpcPort() + " / " + config.getChainName());
 		try
 		{
 			StringBuilder auth = new StringBuilder("Basic ");
-			//auth.append(Base64.encode("hdacrpc:hdac1234".getBytes()));
-			auth.append(Base64.encode((config.getRpcUser() + ":" + config.getRpcPassword()).getBytes()));
+			auth.append(Base64.encode((config.get("rpc_user") + ":" + config.get("rpc_password")).getBytes()));
 
 			String body = getBody(method, params);
 
 			CloseableHttpClient httpclient = HttpClients.createDefault();
-			//HttpPost httpPost = new HttpPost(_RPC_);
-			HttpPost httpPost = new HttpPost(config.getRpcIp() + ":" + config.getRpcPort());
+			
+			String address = StringUtil.nvl(config.get("rpc_address"));
+		    String port = StringUtil.nvl(config.get("rpc_port"));
+		    if (!address.startsWith("http")) {
+		        address = "http://" + address;
+		    
+		    }
+			HttpPost httpPost = new HttpPost(address + ":" + port);
 
 			httpPost.addHeader("content-type", "application/json");
 			httpPost.addHeader("Authorization", auth.toString());
@@ -283,17 +227,17 @@ public class HdacUtil
 	 */
 	public static String getRawTransaction(HdacWallet wallet, JSONArray data, Map<String, Object> paramMap, String toAddress)
 	{
-		System.out.println("getRawTransaction data " + data);
+		System.out.println("***** HdacUtil : getRawTransaction data : " + data);
 
-		//HdacTransaction transaction = new HdacTransaction(wallet);
-		HTransaction transaction = new HTransaction(wallet);
+		HdacTransaction transaction = new HdacTransaction(wallet.getNetworkParams());
+		//HTransaction transaction = new HTransaction(wallet);
 		
 		String sendData = "";
 		
 		if (paramMap.size() > 0)
 			sendData = JsonUtil.toJsonString(paramMap).toString();
 
-		double balance = 0;
+		BigDecimal balance = BigDecimal.ZERO;
 		try
 		{
 			int len = data.length();
@@ -301,7 +245,9 @@ public class HdacUtil
 	    	{
 				JSONObject utxo;
 				utxo = data.getJSONObject(i);
-				balance += utxo.getDouble("amount");
+				balance = balance.add(utxo.getBigDecimal("amount"));
+				
+				transaction.addInput(data.getJSONObject(i));
 			}
 		}
 		catch (JSONException e)
@@ -310,21 +256,20 @@ public class HdacUtil
 			return null;
 		}
 
-		System.out.println("balance " + balance);
+		System.out.println("***** HdacUtil : getRawTransaction balance : " + balance);
 
 		//for checking balance 
-		long lBalance = (long)(balance * Math.pow(10, 8));
-		long fee = (long)(2 * Math.pow(10, 6) + sendData.length() * Math.pow(10, 3));
-		long remain = lBalance - fee;
+		BigInteger lBalance = balance.multiply(BigDecimal.TEN.pow(8)).toBigInteger();
+		BigInteger fee = BigInteger.valueOf(2).multiply(BigInteger.TEN.pow(6)).add(BigInteger.valueOf(sendData.length()).multiply(BigInteger.TEN.pow(3)));
+		BigInteger remain = lBalance.subtract(fee);
 
-		System.out.println("lBalance " + lBalance);
-		System.out.println("fee " + fee);
-		System.out.println("remain " + remain);
+		System.out.println("***** HdacUtil : getRawTransaction : fee : " + fee);
+		System.out.println("***** HdacUtil : getRawTransaction : remain : " + remain);
 		
-		if (remain >= 0)
+		if (remain.compareTo(BigInteger.ZERO) >= 0)
 		{
 			transaction.addOutput(toAddress, 0);
-			transaction.addOutput(wallet.getHdacAddress(true, 0), remain);
+			transaction.addOutput(wallet.getHdacAddress(true, 0), remain.longValue());
 			transaction.addOpReturnOutput(paramMap.get("blockhash").toString(), "UTF-8");
 			
 			try
@@ -335,8 +280,10 @@ public class HdacUtil
 					JSONObject utxo = data.getJSONObject(i);
 					ECKey sign = wallet.getHdacSigKey(utxo.getString("address"));
 
-					if (sign != null)
-						transaction.addSignedInput(utxo, sign);
+					if (sign != null) {
+						transaction.setSignedInput(i, utxo, sign);
+					}
+						//transaction.addSignedInput(utxo, sign);
 				}
 			}
 			catch (JSONException e)
@@ -345,13 +292,13 @@ public class HdacUtil
 			}
 
 			String raw_tx = transaction.getTxBuilder().build().toHex();
-			System.out.println("raw_tx " + raw_tx);
+			System.out.println("***** HdacUtil : getRawTransaction : raw_tx : " + raw_tx);
 			return raw_tx;
 		}
 		else
 		{
-			System.out.println("Raw Transaction : not enough hdac");
-			System.out.println("Invalid raw transaction");
+			System.out.println("***** HdacUtil : getRawTransaction : not enough hdac");
+			System.out.println("***** HdacUtil : getRawTransaction : Invalid raw transaction");
 		}
 		return null;
 	}

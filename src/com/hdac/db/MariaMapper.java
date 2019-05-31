@@ -22,7 +22,6 @@ public interface MariaMapper
 {
 	public List<Map<String, Object>> getAnchorList();
 	public int insertAnchorInfo(Map<String, Object> paramMap);
-	public void deleteAnchorInfo(Map<String, Object> paramMap);
 	public List<String> getSeed(Map<String, Object> paramMap);
 	public Map<String, Object> getLastHistory();
 	public int insertSeedWords(Map<String, Object> paramMap);
@@ -31,4 +30,5 @@ public interface MariaMapper
 	public List<Map<String, Object>> getLastCount();
 	public Map<String, Object> getVerifyAddress(Map<String, Object> paramMap);
 	public List<Map<String, Object>> getTokenName();
+	public Map<String, Object> getAnchorConfig();
 }	
