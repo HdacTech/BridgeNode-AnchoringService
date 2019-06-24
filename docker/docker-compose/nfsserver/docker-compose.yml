@@ -1,0 +1,15 @@
+version: '2'
+
+services:
+  nfs:
+   image: 'hdac/bridgenode_nfsserver_v09'
+   stdin_open: true
+   privileged: true
+   tty: true
+   network_mode: "host"
+   volumes:
+    - /opt/shareLib:/opt/shareLib
+   container_name: nfsserver
+   working_dir: /opt
+   command: init
+   

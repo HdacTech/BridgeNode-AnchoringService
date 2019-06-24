@@ -21,16 +21,16 @@ About docker image
 ### Related docker image 
 
 You can download docker image in [Bridgenode docker hub](https://hub.docker.com/r/hdac/bridgenode).
->1. anchoring_v09
->2. nfsserver_v09
+>1. anchoring_v09 (docker-compose: docker/docker-compose/anchoring)
+>2. nfsserver_v09 (docker-compose: docker/docker-compose/nfsserver)
 
 
 ### How to update docker image
 
 Anchoring service module is a JAVA application operated periodically through CRONTAB.  
-CRONTAB operate main.java including this source code as jar package.
+CRONTAB operate main.java(docker/main/Main.java) including this source code as jar package.
 
->1. Do maven build of project, except directory sh
+>1. Do maven build of project, except directory docker
 >2. We need jar package file on target directory 
 >3. All library files are managed by nfsserver, copy the jar file to the nfsserver docker container.   
 >- $ docker cp Anchoring-0.0.1.jar nfsserver:/opt/shareUtil/lib (After running nfsserver container)

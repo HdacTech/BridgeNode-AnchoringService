@@ -1,0 +1,24 @@
+version: '2'
+
+services:
+  anchor1:
+   image: 'hdac/bridgenode:anchoring_v09'
+   stdin_open: true
+   privileged: true
+   tty: true
+   volumes:
+    - lib-share:/opt/anchor/shareLib:ro
+   network_mode: "host"
+   container_name: anchor_ing
+   working_dir: /opt
+   command: init
+
+volumes:
+ lib-share:
+  driver: local
+  driver_opts:
+    type: nfs
+    o: "addr=127.0.0.1,rw"
+    device: ":/opt/shareLib"
+
+   
