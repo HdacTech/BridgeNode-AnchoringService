@@ -11,7 +11,10 @@ Copyright (c) 2018-2019 Hdac Technology AG
 ### Execution environment 
 
 About source code
->- Java maven application
+>- JavaSE 1.8 optimization
+>- Using Eclipse Oxygen.1a Release (4.7.1a)
+>- Use HdacJavaLib.jar,
+>- This jar file must be included in the project.
 
 About docker image
 >- Centos
@@ -23,6 +26,14 @@ About docker image
 You can download docker image in [Bridgenode docker hub](https://hub.docker.com/r/hdac/bridgenode).
 >1. anchoring_v09 (docker-compose: [anchoring-docker-compose](docker/docker-compose/anchoring))
 >2. nfsserver_v09 (docker-compose: [nfsserver-docker-compose](docker/docker-compose/nfsserver))
+
+
+### How to build source code
+
+>1. Download the source code and add the project through Eclipse.
+>2. File > Import > Maven | Existing Maven Projects
+>3. Choose the folder where the source is located, check pom.xml, and complete the import.
+>4. After Project> Clean, Run Build Project.
 
 
 ### How to update docker image
