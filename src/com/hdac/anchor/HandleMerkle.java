@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.hdac.db.MariaDao;
@@ -49,7 +50,22 @@ public class HandleMerkle {
 		int startIdx = 0;
 		if(dbHeight / anchorCount > 0) 
 			startIdx = (int)(dbHeight / anchorCount);
-				
+		
+		String countResult = HdacUtil.getDataFromRPC("getblockcount", new String[0], serverConfig_);
+		long currentCount = 0;
+		try 
+		{
+			currentCount = new JSONObject(countResult).getLong("result");
+		} 
+		catch (JSONException e) 
+		{
+			e.printStackTrace();
+		}
+		
+		System.out.println("***** HandleMerkle : currentBlockHeight : " + currentCount);
+		
+		if(startIdx + 1 > (int)(currentCount / anchorCount)) return "";
+						
 		List<String> merkleList = makeMerkleList(startIdx);
 		List<String> finalMerkle = makeHash(merkleList);
 		String hash = finalMerkle.get(0).toString();
