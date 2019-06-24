@@ -32,20 +32,20 @@ CRONTAB operate main.java including this source code as jar package.
 
 >1. Do maven build of project, except directory sh
 >2. We need jar package file on target directory 
->3. All library files are managed by nfsserver, copy the jar file to the nfsserver docker container. 
-> $ docker cp Anchoring-0.0.1.jar nfsserver:/opt/shareUtil/lib (After running nfsserver container)
+>3. All library files are managed by nfsserver, copy the jar file to the nfsserver docker container.   
+>- $ docker cp Anchoring-0.0.1.jar nfsserver:/opt/shareUtil/lib (After running nfsserver container)
 
 
 ### How to operate service
 
 >1. Operate nfsserver docker container
 >2. Operate anchoring docker container
->3. Checking share library inside anchoring container
-> $ docker exec -it anchoring bash
-> $ cd anchor/shareLib
+>3. Checking share library inside anchoring container  
+>- $ docker exec -it anchoring bash  
+>- $ cd anchor/shareLib  
 >4. configure database config file and CRONTAB shedule (anchor/config, crontab -e)
->5. After configuration, start crontab serivce
-> $ systemctl start crond
+>5. After configuration, start crontab serivce  
+>- $ systemctl start crond  
 
 
 
