@@ -21,8 +21,8 @@ About docker image
 ### Related docker image 
 
 You can download docker image in [Bridgenode docker hub](https://hub.docker.com/r/hdac/bridgenode).
->1. anchoring_v09 (docker-compose: docker/docker-compose/anchoring)
->2. nfsserver_v09 (docker-compose: docker/docker-compose/nfsserver)
+>1. anchoring_v09 (docker-compose: [anchoring-docker-compose](docker/docker-compose/anchoring))
+>2. nfsserver_v09 (docker-compose: [nfsserver-docker-compose](docker/docker-compose/nfsserver))
 
 
 ### How to update docker image
