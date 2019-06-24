@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cd /opt/anchor 
-java -cp lib/*:. com.hdac.anchor.Anchor
+cd /opt/anchor
+java -cp shareLib/*:. com.hdac.main.Main
 
 
