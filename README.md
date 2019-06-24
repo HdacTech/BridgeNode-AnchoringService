@@ -59,6 +59,9 @@ CRONTAB operate main.java(docker/main/Main.java) including this source code as j
 >- $ systemctl start crond  
 
 
+_A detailed description of the docker setting and operation can be found here [Bridgenode docker hub](https://hub.docker.com/r/hdac/bridgenode)._
+
+
 
 
 
